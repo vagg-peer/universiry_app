@@ -1,0 +1,50 @@
+{# templates/admin/lesson/index.html.twig #}
+{% extends 'base.html.twig' %}
+
+{% block title %}Lessons List{% endblock %}
+
+{% block body %}
+    {% include 'admin/partials/_navbar.html.twig' %}
+    <div class="container mt-5">
+        <h1 class="text-center mb-4">Lessons List</h1>
+
+        <div class="card shadow p-4">
+            <table class="table table-striped">
+                <thead class="table-dark">
+                    <tr>
+                        <th>ID</th>
+                        <th>Lesson Name</th>
+                        <th>Semester</th>
+                        <th>Teacher</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for lesson in lessons %}
+                        <tr>
+                            <td>{{ lesson.id }}</td>
+                            <td>{{ lesson.name }}</td>
+                            <td>{{ lesson.semester }}</td>
+                            <td>{{ lesson.teacher }}</td>
+                            <td>
+                                <a href="{{ path('admin_lesson_edit', {'id': lesson.id}) }}" class="btn btn-warning btn-sm">
+                                    Edit
+                                </a>
+                                <form action="{{ path('admin_lesson_delete', {'id': lesson.id}) }}" method="post" class="d-inline">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ lesson.id) }}">
+                                    <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('All associated grades will be deleted too. Are you sure?');">
+                                        Delete
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="5" class="text-center">No lessons found</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+{% endblock %}

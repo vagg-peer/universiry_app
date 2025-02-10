@@ -1,0 +1,39 @@
+{# templates/teacher/index.html.twig #}
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ teacher.user.firstname }} {{ teacher.user.lastname  }}{% endblock %}
+
+{% block body %}
+{% include 'partials/_navbar.html.twig' with {'homePath': homePath} %}
+<div class="container mt-5">
+    <h1 class="text-center mb-4">{{ teacher.user.firstname }} {{ teacher.user.lastname  }}</h1>
+    
+    <div class="card shadow p-4">
+        <div class="p-4">
+            <div class="card shadow p-4">
+                <h4>Lessons</h4>
+                <table class="table table-striped">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Lesson</th>
+                            <th>Semester</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for lesson in lessons %}
+                            <tr>
+                                <td>{{ lesson.name }}</td>
+                                <td>{{ lesson.semester }}</td>
+                            </tr>
+                        {% else %}
+                            <tr>
+                                <td colspan="2" class="text-center">No lessons found</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>  
+    </div>
+</div>
+{% endblock %}

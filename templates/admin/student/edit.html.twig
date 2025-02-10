@@ -1,0 +1,78 @@
+{# templates/admin/student/edit.html.twig #}
+{% extends 'base.html.twig' %}
+{% block title %}Edit Student{% endblock %}
+
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/css/select2.min.css" rel="stylesheet" />
+{% endblock %}
+
+{% block body %}
+    {% include 'admin/partials/_navbar.html.twig' %}
+
+    {% for message in app.flashes('error') %}
+        <div class="alert alert-danger">{{ message }}</div>
+    {% endfor %}
+
+    {% for message in app.flashes('success') %}
+        <div class="alert alert-success">{{ message }}</div>
+    {% endfor %}
+    <div class="container d-flex justify-content-center align-items-center" style="min-height: 100vh;">
+        <div class="w-25">
+            <h1 class="text-center mb-4">Edit Student</h1>
+            <div class="card shadow p-4">
+                {{ form_start(studentForm, {'attr': {'class': 'needs-validation'}}) }}
+                    {{ form_widget(studentForm) }}
+                {{ form_end(studentForm) }}
+            </div>
+        </div>    
+        <div class="w-50">
+                    <!-- Grades Table -->
+        
+            <div class="card shadow p-4">
+                <h4>Grades</h4>
+                <table class="table table-striped">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Lesson</th>
+                            <th>Grade</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for grade in grades %}
+                            <tr>
+                                <td>{{ grade.lesson.name }} (Semester: {{ grade.lesson.semester }} )</td>
+                                <td>{{ grade.score }}</td>
+                            </tr>
+                        {% else %}
+                            <tr>
+                                <td colspan="2" class="text-center">No grades found</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <div class="card shadow p-4">
+                {{ form_start(gradeForm, {'attr': {'class': 'needs-validation'}}) }}
+                    {{ form_widget(gradeForm) }}
+                {{ form_end(gradeForm) }}
+            </div>
+        </div>    
+        
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/js/select2.min.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            jQuery('.select2').select2({
+                placeholder: "Search for a lesson...",
+                allowClear: true
+            });
+        });
+    </script>
+{% endblock %}

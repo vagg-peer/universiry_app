@@ -1,0 +1,66 @@
+{# templates/admin/teacher/index.html.twig #}
+{% extends 'base.html.twig' %}
+
+{% block title %}Students List{% endblock %}
+
+{% block body %}
+{% include 'admin/partials/_navbar.html.twig' %}
+    <div class="container mt-5">
+        <h1 class="text-center mb-4">Students List</h1>
+
+        <div class="card shadow p-4">
+            <table class="table table-striped">
+                <thead class="table-dark">
+                    <tr>
+                        <th>ID</th>
+                        <th>Student Name</th>
+                        <th>Start of Studies</th>
+                        <th>Semester</th>
+                        <th>Active Status</th>
+                        <th>Active User Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for student in students %}
+                        <tr>
+                            <td>{{ student.id }}</td>
+                            <td>{{ student.user.firstname }} {{ student.user.lastname }}</td>
+                            <td>{{ student.startOfStudies ? student.startOfStudies|date('Y-m-d') : 'N/A' }}</td>
+                            <td>{{ student.semester ? student.semester : 'N/A' }}</td>
+                            <td>
+                                {% if student.isActive %}
+                                    <span class="badge bg-success">Active</span>
+                                {% else %}
+                                    <span class="badge bg-danger">Inactive</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if student.user.isActive %}
+                                    <span class="badge bg-success">Active</span>
+                                {% else %}
+                                    <span class="badge bg-danger">Inactive</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <a href="{{ path('admin_student_edit', {'id': student.id}) }}" class="btn btn-warning btn-sm">
+                                    Edit
+                                </a>
+                                <form action="{{ path('admin_student_delete', {'id': student.id}) }}" method="post" class="d-inline">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ student.id) }}">
+                                    <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('All associated grades will be deleted too. Are you sure?');">
+                                        Delete
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="7" class="text-center">No students found</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+{% endblock %}

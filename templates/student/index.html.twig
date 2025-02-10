@@ -1,0 +1,39 @@
+{# templates/student/index.html.twig #}
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ student.user.firstname }} {{ student.user.lastname  }}{% endblock %}
+
+{% block body %}
+{% include 'partials/_navbar.html.twig' with {'homePath': homePath} %}
+<div class="container mt-5">
+    <h1 class="text-center mb-4">{{ student.user.firstname }} {{ student.user.lastname  }}  (Semester: {{ student.semester }})</h1>
+    
+    <div class="card shadow p-4">
+        <div class="p-4">
+            <div class="card shadow p-4">
+                <h4>Grades</h4>
+                <table class="table table-striped">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Lesson</th>
+                            <th>Grade</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for grade in grades %}
+                            <tr>
+                                <td>{{ grade.lesson.name }} (Semester: {{ grade.lesson.semester }} )</td>
+                                <td>{{ grade.score }}</td>
+                            </tr>
+                        {% else %}
+                            <tr>
+                                <td colspan="2" class="text-center">No grades found</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>  
+    </div>
+</div>
+{% endblock %}
