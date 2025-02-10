@@ -13,6 +13,7 @@ class StudentDTO
     private ?\DateTimeInterface $startOfStudies = null;
 
     #[Assert\NotNull]
+    #[Assert\Valid]
     private ?UserDTO $user = null;
 
     #[Assert\Type(type: 'bool', message: "Invalid value. This must be true or false.")]

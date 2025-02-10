@@ -14,6 +14,7 @@ use App\Service\StudentService;
 use App\Service\LessonService;
 use App\Service\GradeService;
 use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 #[Route('/admin/student', name: 'admin_student_')]
 class AdminStudentController extends AbstractController
@@ -45,8 +46,9 @@ class AdminStudentController extends AbstractController
     }
 
     #[Route('/new', name: 'new')]
-    public function new(Request $request): Response
+    public function new(Request $request, ValidatorInterface $validator): Response
     {
+        $errors = [];
         $studentDTO = new StudentDTO();
 
         $studentForm = $this->createForm(StudentDTOType::class, $studentDTO);
@@ -54,9 +56,7 @@ class AdminStudentController extends AbstractController
 
         if ($studentForm->isSubmitted()) {
 
-            if (!$studentForm->isValid()){
-                $this->addFlash('error', 'There were errors in the form. Please fix them.');
-            }
+            $errors = $validator->validate($studentForm);
 
             $studentDTO->getUser()->setRoles(['ROLE_STUDENT']);
 
@@ -71,8 +71,9 @@ class AdminStudentController extends AbstractController
     }
 
     #[Route('/edit/{id}', name: 'edit')]
-    public function edit(int $id, Request $request): Response
+    public function edit(int $id, Request $request, ValidatorInterface $validator): Response
     {
+        $errors = [];
         $studentDTO = $this->studentService->getStudentById($id);
         $studentGrades = $studentDTO->getGrades();
         $lessonDTOs = $this->lessonService->getStudentAvailableLessonsBySemester($studentDTO->getSemester());
@@ -81,7 +82,7 @@ class AdminStudentController extends AbstractController
         
         //student form
         $studentForm = $this->createForm(StudentDTOType::class, $studentDTO);
-        $studentForm->handleRequest($request);
+        
         if($studentGrades){
             $ScoredLessons = array_map(fn($item) => $item->getLesson()->getId(), $studentGrades);
             $remainingLessons = array_filter($lessonDTOs, fn($lesson) => !in_array($lesson->getId(), $ScoredLessons));
@@ -94,29 +95,31 @@ class AdminStudentController extends AbstractController
         $gradeForm = $this->createForm(GradeDTOType::class, $gradeDTO, [
             'lessons' => $remainingLessons,
         ]);
-        $gradeForm->handleRequest($request);
-
+        
+        $studentForm->handleRequest($request);
         if ($studentForm->isSubmitted()) {
 
-            if (!$studentForm->isValid()){
-                $this->addFlash('error', 'There were errors in the form. Please fix them.');
+            $errors = $validator->validate($studentForm);
+
+            if(count($errors) === 0){
+                $studentDTO->getUser()->setRoles(['ROLE_STUDENT']);
+                $this->studentService->save($studentDTO, $id);
+                return $this->redirectToRoute('admin_student_list');
             }
-
-            $studentDTO->getUser()->setRoles(['ROLE_STUDENT']);
-
-            $this->studentService->save($studentDTO, $id);
-
-            return $this->redirectToRoute('admin_student_list');
         }
 
         // Handle Grade Form Submission
+        $gradeForm->handleRequest($request);
+
         if ($gradeForm->isSubmitted()) {
-            if (!$gradeForm->isValid()){
-                $this->addFlash('error', 'There were errors in the form. Please fix them.');
+            $errors = $validator->validate($gradeDTO);
+            
+            if(count($errors) === 0){
+                $this->gradeService->save($gradeDTO);
+                $this->addFlash('success', 'Grade added successfully!');
+                return $this->redirectToRoute('admin_student_edit', ['id' => $id]);
             }
-            $this->gradeService->save($gradeDTO);
-            $this->addFlash('success', 'Grade added successfully!');
-            return $this->redirectToRoute('admin_student_edit', ['id' => $id]);
+
         }
         // $studentDTO = $this->studentService->getStudentById($id);
         
@@ -124,7 +127,8 @@ class AdminStudentController extends AbstractController
             'studentForm' => $studentForm->createView(),
             'student' => $studentDTO,
             'gradeForm' => $gradeForm->createView(),
-            'grades' => $studentGrades
+            'grades' => $studentGrades,
+            'errors' => $errors
         ]);
 
         // return $this->render('user/edit.html.twig');

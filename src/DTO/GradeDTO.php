@@ -8,9 +8,9 @@ class GradeDTO
     private ?int $id = null;
 
     #[Assert\NotBlank(message: "Score is required")]
-    #[Assert\Type(type: "float", message: "Semester must be a valid float.")]
-    #[Assert\PositiveOrZero(message: "Semester must be 0 or higher.")] // Prevents negative values
-    #[Assert\LessThanOrEqual(value: 10, message: "Semester cannot be greater than 10.")]
+    #[Assert\Type(type: "float", message: "Score must be a valid float.")]
+    #[Assert\PositiveOrZero(message: "Score must be 0 or higher.")] // Prevents negative values
+    #[Assert\LessThanOrEqual(value: 10, message: "Score cannot be greater than 10.")]
     private ?float $score = null;
 
     #[Assert\NotNull]

@@ -12,21 +12,35 @@ class UserDTO
     private ?string $email = null;
 
     #[Assert\NotBlank(message: "First name is required.")]
-    #[Assert\Length(min: 2, max: 255,  message: "Firstname must have 3-255 characters")]
+    #[Assert\Length(
+        min: 2, 
+        max: 50, 
+        minMessage: "Firstname must have at least 2 characters.",
+        maxMessage: "Firstname cannot exceed 50 characters."
+    )]
     private ?string $firstname = null;
 
-    #[Assert\NotBlank(message: "First name is required.")]
-    #[Assert\Length(min: 2, max: 255, message: "Lastname must have 3-255 characters")]
+    #[Assert\NotBlank(message: "Lastname is required.")]
+    #[Assert\Length(
+        min: 2, 
+        max: 50, 
+        minMessage: "Lastname must have at least 2 characters.",
+        maxMessage: "Lastname cannot exceed 50 characters."
+    )]
     private ?string $lastname = null;
 
-    #[Assert\NotBlank]
-    #[Assert\Choice(choices: ["ROLE_ADMIN", "ROLE_TEACHER", "ROLE_STUDENT"], message: "Invalid status. Choose: ROLE_ADMIN, ROLE_TEACHER, or ROLE_STUDENT.")]
+    #[Assert\NotBlank(message: "Lastname is required.")]
     private array $roles = [];
 
     #[Assert\Type(type: 'bool', message: "Invalid value. This must be true or false.")]
     private ?bool $isActive = null;
 
-    #[Assert\Length(min: 6, max: 255, message: "Password must have at least 6 characters")]
+    #[Assert\Length(
+        min: 2, 
+        max: 30, 
+        minMessage: "Password must have at least 2 characters.",
+        maxMessage: "Password cannot exceed 30 characters."
+    )]
     private ?string $plainPassword = null; // Store the plain password for form handling
 
     public function getId(): ?int
