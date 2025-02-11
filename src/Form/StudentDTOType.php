@@ -16,8 +16,9 @@ class StudentDTOType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $builder
+            // Embed the entire User Form
             ->add('user', UserDTOType::class, [
-                'label' => false, // Hide extra label
+                'label' => false,
             ])
             ->add('startOfStudies', DateType::class, [
                 'widget' => 'single_text',

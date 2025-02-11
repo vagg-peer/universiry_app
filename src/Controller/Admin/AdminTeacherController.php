@@ -31,12 +31,10 @@ class AdminTeacherController extends AbstractController
     #[Route('/', name: 'list')]
     public function index(Request $request, PaginatorInterface $paginator): Response
     {
-        // Fetch all teachers from the repository
         $teachers = $this->teacherService->getAll();
 
         $teachers = $paginator->paginate($teachers, $request->query->getInt('page', 1), 5);
 
-        // Render the Twig template and pass the list of teachers
         return $this->render('admin/teacher/index.html.twig', [
             'teachers' => $teachers           
         ]);
@@ -62,9 +60,8 @@ class AdminTeacherController extends AbstractController
                     $this->addFlash('success', 'Saved successfully!');
                     return $this->redirectToRoute('admin_teacher_list');
                 } catch (UniqueConstraintViolationException $e) {
-                    // Add a user-friendly error message
                     $this->addFlash('error', 'This email is already registered. Please use a different email.');
-                } // Adjust the route as needed
+                } 
             }
         }
 
@@ -79,7 +76,7 @@ class AdminTeacherController extends AbstractController
     {
         $errors = [];
         $teacherDTO = $this->teacherService->getTeacherById($id);
-        // dd($teacherDTO);
+        
 
         $form = $this->createForm(TeacherDTOType::class, $teacherDTO);
         $form->handleRequest($request);
@@ -95,9 +92,8 @@ class AdminTeacherController extends AbstractController
                     $this->addFlash('success', 'Saved successfully!');
                     return $this->redirectToRoute('admin_teacher_list');
                 } catch (UniqueConstraintViolationException $e) {
-                    // Add a user-friendly error message
                     $this->addFlash('error', 'This email is already registered. Please use a different email.');
-                } // Adjust the route as needed
+                } 
             }
         }
         $teacherDTO = $this->teacherService->getTeacherById($id);
@@ -108,7 +104,7 @@ class AdminTeacherController extends AbstractController
             'errors' => $errors
         ]);
 
-        // return $this->render('user/edit.html.twig');
+     
     }
 
     #[Route('/delete/{id}', name: 'delete', methods: ['POST'])]
@@ -127,13 +123,11 @@ class AdminTeacherController extends AbstractController
             throw $this->createNotFoundException('Teacher not found');
         }
         
-        // dd($teacherDTO);
         $this->teacherService->delete($teacherDTO->getId());
 
         $this->addFlash('success', 'Teacher deleted successfully.');
 
         return $this->redirectToRoute('admin_teacher_list');
     }
-    //check εδω να βάλω να παίρναι αυτόματα τον ρολο
 
 }

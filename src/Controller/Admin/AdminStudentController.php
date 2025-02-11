@@ -88,10 +88,7 @@ class AdminStudentController extends AbstractController
         $studentGrades = $studentDTO->getGrades();
         
         $lessonDTOs = $this->lessonService->getStudentAvailableLessonsBySemester($studentDTO->getSemester());
-        // dd($lessonDTOs);
         
-        
-        //student form
         $studentForm = $this->createForm(StudentDTOType::class, $studentDTO);
         
         if($studentGrades){
@@ -104,7 +101,7 @@ class AdminStudentController extends AbstractController
         $studentGrades = $paginator->paginate($studentGrades, $request->query->getInt('page', 1), 5);
         
         $gradeDTO = new GradeDTO();
-        $gradeDTO->setStudent($studentDTO); // Automatically assign the student
+        $gradeDTO->setStudent($studentDTO); 
         $gradeForm = $this->createForm(GradeDTOType::class, $gradeDTO, [
             'lessons' => $remainingLessons,
         ]);
@@ -139,7 +136,6 @@ class AdminStudentController extends AbstractController
             }
 
         }
-        // $studentDTO = $this->studentService->getStudentById($id);
         
         return $this->render('admin/student/edit.html.twig', [
             'studentForm' => $studentForm->createView(),
@@ -149,7 +145,6 @@ class AdminStudentController extends AbstractController
             'errors' => $errors
         ]);
 
-        // return $this->render('user/edit.html.twig');
     }
 
     #[Route('/delete/{id}', name: 'delete', methods: ['POST'])]
@@ -168,7 +163,6 @@ class AdminStudentController extends AbstractController
             throw $this->createNotFoundException('Student not found');
         }
         
-        // dd($studentDTO);
         $this->studentService->delete($studentDTO->getId());
 
         $this->addFlash('success', 'Student deleted successfully.');

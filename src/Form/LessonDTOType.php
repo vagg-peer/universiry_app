@@ -44,8 +44,6 @@ class LessonDTOType extends AbstractType
                 },
                 'label' => 'Teacher',
                 'attr' => ['class' => 'select2'],
-                // 'placeholder' => 'No selected teacher',
-                // 'required' => false,
             ])
             ->add('save', SubmitType::class);
     }

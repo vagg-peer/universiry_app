@@ -24,7 +24,7 @@ class GradeDTOType extends AbstractType
                 'scale' => 2,
             ])
             ->add('lesson', ChoiceType::class, [
-                'choices' => $options['lessons'], // Pass lessons from controller
+                'choices' => $options['lessons'],
                 'choice_label' => function (LessonDTO $lesson) {
                     return $lesson->getName() . ' (Semester ' . $lesson->getSemester() . ')';
                 },
@@ -32,7 +32,7 @@ class GradeDTOType extends AbstractType
                     return $lesson ? $lesson->getId() : '';
                 },
                 'label' => 'Lesson',
-                'attr' => ['class' => 'select2'], // Add class for Select2
+                'attr' => ['class' => 'select2'],
             ])
             ->add('save', SubmitType::class);
     }

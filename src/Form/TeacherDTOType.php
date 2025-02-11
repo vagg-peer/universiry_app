@@ -15,7 +15,7 @@ class TeacherDTOType extends AbstractType
         $builder
             // Embed the entire User Form
             ->add('user', UserDTOType::class, [
-            'label' => false, // Hide extra label
+            'label' => false, 
             ])
             ->add('isActive', CheckboxType::class, [
                 'label' => 'Active Teacher',

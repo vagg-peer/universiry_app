@@ -52,10 +52,9 @@ class AdminLessonController extends AbstractController
 
 
         $form = $this->createForm(LessonDTOType::class, $lessonDTO, [
-            'teachers' => $activeTeacherDTOs, // Pass DTOs to the form
+            'teachers' => $activeTeacherDTOs, 
         ]);
 
-        // $form = $this->createForm(LessonDTOType::class, $lessonDTO);
         $form->handleRequest($request);
 
         if ($form->isSubmitted()) {
@@ -126,7 +125,6 @@ class AdminLessonController extends AbstractController
             throw $this->createNotFoundException('Lesson not found');
         }
         
-        // dd($lessonDTO);
         $this->lessonService->delete($lessonDTO->getId());
 
         $this->addFlash('success', 'Lesson deleted successfully.');

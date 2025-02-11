@@ -27,14 +27,6 @@ class UserDTOType extends AbstractType
         ->add('lastname', TextType::class, [
             'label' => 'Last Name',
         ])
-        // ->add('roles', ChoiceType::class, [
-        //     'choices' => [
-        //         'Teacher' => 'ROLE_TEACHER',
-        //         'Student' => 'ROLE_STUDENT',
-        //         'Admin' => 'ROLE_ADMIN',
-        //     ],
-        //     'label' => 'Roles',
-        // ])
         ->add('isActive', CheckboxType::class, [
             'label' => 'Active User',
             'required' => false,
@@ -45,10 +37,8 @@ class UserDTOType extends AbstractType
         $userDTO = $event->getData();
         $form = $event->getForm();
 
-        // Check if it's a new user (assuming no ID means it's new)
-        $isNew = !$userDTO; //check εδω || null === $userDTO->get_id();
+        $isNew = !$userDTO;
 
-        // Add the password field with required only if new
         $form->add('plainPassword', PasswordType::class, [
             'label' => 'Password' . ($isNew ? '' : ' (leave blank to keep current)'),
             'required' => $isNew,
