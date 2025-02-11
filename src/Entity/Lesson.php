@@ -26,12 +26,6 @@ class Lesson extends MainEntity
     #[ORM\JoinColumn(onDelete: 'SET NULL')]
     private ?Teacher $teacher = null;
 
-    #[ORM\ManyToOne(inversedBy: 'lessons')]
-    private ?Date $date = null;
-
-    /**
-     * @var Collection<int, Grade>
-     */
     #[ORM\OneToMany(targetEntity: Grade::class, mappedBy: 'lesson', cascade: ['remove'], orphanRemoval: true)]
     private Collection $grades;
 
@@ -88,21 +82,6 @@ class Lesson extends MainEntity
         return $this;
     }
 
-    public function getDate(): ?Date
-    {
-        return $this->date;
-    }
-
-    public function setDate(?Date $date): static
-    {
-        $this->date = $date;
-
-        return $this;
-    }
-
-    /**
-     * @return Collection<int, Grade>
-     */
     public function getGrades(): Collection
     {
         return $this->grades;
@@ -130,9 +109,6 @@ class Lesson extends MainEntity
         return $this;
     }
 
-    /**
-     * @return Collection<int, Student>
-     */
     public function getStudents(): Collection
     {
         return $this->students;

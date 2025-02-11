@@ -60,7 +60,6 @@ class GradeService
     {
         $grade = ($id) ? $this->gradeRepository->find($id) : new Grade();
         $grade = $this->toEntity($gradeDTO, $grade);
-        // dd($grade);
         $this->em->persist($grade);
         $this->em->flush();
         return $this->toDTO($grade);

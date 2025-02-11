@@ -61,6 +61,7 @@ class StudentService
     public function save(StudentDTO $studentDTO) : StudentDTO
     {
         $student = $this->toEntity($studentDTO);
+        $student->setUpdatedAt(new \DateTimeImmutable());
         $this->em->persist($student);
         $this->em->flush();
         return $this->toDTO($student);

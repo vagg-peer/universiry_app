@@ -7,12 +7,19 @@ class LessonDTO
 {
     private ?int $id = null;
 
-    #[Assert\NotBlank(message: "Lesson name is required.")]
-    #[Assert\Length(min: 3, max: 255, message: "Name must have 3-255 characters")]
+    #[Assert\NotBlank(message: "Lesson is required.")]
+    #[Assert\Length(
+        min: 2, 
+        max: 50, 
+        minMessage: "Lesson must have at least 2 characters.",
+        maxMessage: "Lesson cannot exceed 50 characters."
+    )]
     private ?string $name = null;
 
-    #[Assert\NotBlank]
-    #[Assert\Range(min: 0, max: 10, message: "Semester must be between 0-10")]
+    #[Assert\NotBlank(message: "Semester is required")]
+    #[Assert\Type(type: "int", message: "Semester must be a valid float.")]
+    #[Assert\Positive(message: "Semester must be 1 or higher.")] // Prevents negative values
+    #[Assert\LessThanOrEqual(value: 10, message: "Semester cannot be greater than 10.")]
     private ?int $semester = null;
 
     

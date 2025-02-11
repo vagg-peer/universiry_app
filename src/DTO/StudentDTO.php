@@ -19,14 +19,8 @@ class StudentDTO
     #[Assert\Type(type: 'bool', message: "Invalid value. This must be true or false.")]
     private ?bool $isActive = null;
 
-        /**
-     * @var GradeDTO[]|null
-     */
     private ?array $grades = [];
 
-    /**
-     * @var LessonDTO[]|null
-     */
     private ?array $lessons = [];
 
     private ?int $semester = null;
@@ -76,9 +70,6 @@ class StudentDTO
         return $this;
     }
 
-        /**
-     * @return GradeDTO[]|null
-     */
     public function getGrades(): ?array
     {
         usort($this->grades, function ($a, $b) {
@@ -88,26 +79,17 @@ class StudentDTO
         return $this->grades;
     }
 
-    /**
-     * @param GradeDTO[] $grades
-     */
     public function setGrades(array $grades): self
     {
         $this->grades = $grades;
         return $this;
     }
 
-    /**
-     * @return LessonDTO[]|null
-     */
     public function getLessons(): ?array
     {
         return $this->lessons;
     }
 
-    /**
-     * @param LessonDTO[] $lessons
-     */
     public function setLessons(array $lessons): self
     {
         $this->lessons = $lessons;
@@ -121,6 +103,7 @@ class StudentDTO
 
     public function setSemester(): self
     {
+        //use helper to calculate student's semester by startOfStudies
         $this->semester = StudentHelper::calculateStudentSemester($this->getStartOfStudies());
         return $this;
     }

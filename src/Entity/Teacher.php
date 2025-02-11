@@ -20,9 +20,6 @@ class Teacher extends MainEntity
     #[ORM\JoinColumn(nullable: false)]
     private ?User $user = null;
 
-    /**
-     * @var Collection<int, Lesson>
-     */
     #[ORM\OneToMany(targetEntity: Lesson::class, mappedBy: 'teacher')]
     private Collection $lessons;
 
@@ -31,6 +28,10 @@ class Teacher extends MainEntity
 
     public function __construct()
     {
+        /**
+         * used this #[ORM\HasLifecycleCallbacks] instead of parent::__construct()
+         * PHP does now init parents conctructor if overriden 
+         */
         // parent::__construct();
         $this->lessons = new ArrayCollection();
     }
@@ -52,9 +53,6 @@ class Teacher extends MainEntity
         return $this;
     }
 
-    /**
-     * @return Collection<int, Lesson>
-     */
     public function getLessons(): Collection
     {
         return $this->lessons;

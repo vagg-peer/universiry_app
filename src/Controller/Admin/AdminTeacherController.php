@@ -10,6 +10,10 @@ use App\DTO\TeacherDTO;
 use App\Form\TeacherDTOType;
 use App\Service\TeacherService;
 use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
+use Knp\Component\Pager\PaginatorInterface;
+use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
+
 
 #[Route('/admin/teacher', name: 'admin_teacher_')]
 class AdminTeacherController extends AbstractController
@@ -25,20 +29,23 @@ class AdminTeacherController extends AbstractController
     }
 
     #[Route('/', name: 'list')]
-    public function index(): Response
+    public function index(Request $request, PaginatorInterface $paginator): Response
     {
         // Fetch all teachers from the repository
         $teachers = $this->teacherService->getAll();
 
+        $teachers = $paginator->paginate($teachers, $request->query->getInt('page', 1), 5);
+
         // Render the Twig template and pass the list of teachers
         return $this->render('admin/teacher/index.html.twig', [
-            'teachers' => $teachers,
+            'teachers' => $teachers           
         ]);
     }
 
     #[Route('/new', name: 'new')]
-    public function new(Request $request): Response
+    public function new(Request $request, ValidatorInterface $validator): Response
     {
+        $errors = [];
         $teacherDTO = new TeacherDTO();
 
         $form = $this->createForm(TeacherDTOType::class, $teacherDTO);
@@ -46,26 +53,31 @@ class AdminTeacherController extends AbstractController
 
         if ($form->isSubmitted()) {
 
-            if (!$form->isValid()){
-                $this->addFlash('error', 'There were errors in the form. Please fix them.');
+            $errors = $validator->validate($form);
+
+            if(count($errors) === 0){
+                try{    
+                    $teacherDTO->getUser()->setRoles(['ROLE_TEACHER']);
+                    $this->teacherService->save($teacherDTO);
+                    $this->addFlash('success', 'Saved successfully!');
+                    return $this->redirectToRoute('admin_teacher_list');
+                } catch (UniqueConstraintViolationException $e) {
+                    // Add a user-friendly error message
+                    $this->addFlash('error', 'This email is already registered. Please use a different email.');
+                } // Adjust the route as needed
             }
-
-            $teacherDTO->getUser()->setRoles(['ROLE_TEACHER']);
-
-            $this->teacherService->save($teacherDTO);
-
-            return $this->redirectToRoute('admin_teacher_list'); // Adjust the route as needed
         }
 
         return $this->render('admin/teacher/new.html.twig', [
             'form' => $form->createView(),
+            'errors' => $errors
         ]);
     }
 
     #[Route('/edit/{id}', name: 'edit')]
-    public function edit(int $id, Request $request): Response
+    public function edit(int $id, Request $request, ValidatorInterface $validator): Response
     {
-
+        $errors = [];
         $teacherDTO = $this->teacherService->getTeacherById($id);
         // dd($teacherDTO);
 
@@ -74,23 +86,26 @@ class AdminTeacherController extends AbstractController
 
         if ($form->isSubmitted()) {
 
-            if (!$form->isValid()){
-                $this->addFlash('error', 'There were errors in the form. Please fix them.');
+            $errors = $validator->validate($form);
+
+            if(count($errors) === 0){
+                try{    
+                    $teacherDTO->getUser()->setRoles(['ROLE_TEACHER']);
+                    $this->teacherService->save($teacherDTO, $id);
+                    $this->addFlash('success', 'Saved successfully!');
+                    return $this->redirectToRoute('admin_teacher_list');
+                } catch (UniqueConstraintViolationException $e) {
+                    // Add a user-friendly error message
+                    $this->addFlash('error', 'This email is already registered. Please use a different email.');
+                } // Adjust the route as needed
             }
-
-            $teacherDTO->getUser()->setRoles(['ROLE_TEACHER']);
-
-            // dd($teacherDTO);
-
-            $this->teacherService->save($teacherDTO, $id);
-
-            return $this->redirectToRoute('admin_teacher_list');
         }
         $teacherDTO = $this->teacherService->getTeacherById($id);
         
         return $this->render('admin/teacher/edit.html.twig', [
             'form' => $form->createView(),
             'teacher' => $teacherDTO,
+            'errors' => $errors
         ]);
 
         // return $this->render('user/edit.html.twig');

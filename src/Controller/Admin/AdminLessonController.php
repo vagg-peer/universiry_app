@@ -11,6 +11,8 @@ use App\Form\LessonDTOType;
 use App\Service\LessonService;
 use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 use App\Service\TeacherService;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
+use Knp\Component\Pager\PaginatorInterface;
 
 #[Route('/admin/lesson', name: 'admin_lesson_')]
 class AdminLessonController extends AbstractController
@@ -27,23 +29,27 @@ class AdminLessonController extends AbstractController
     }
 
     #[Route('/', name: 'list')]
-    public function index() : Response
+    public function index(Request $request, PaginatorInterface $paginator) : Response
     {
-        // Fetch all lessons from the repository
+        // fetch all lessons
         $lessons = $this->lessonService->getAll();
-
-        // Render the Twig template and pass the list of lessons
+        // paginate
+        $lessons = $paginator->paginate($lessons, $request->query->getInt('page', 1), 5);
         return $this->render('admin/lesson/index.html.twig', [
             'lessons' => $lessons,
         ]);
     }
 
     #[Route('/new', name: 'new')]
-    public function new(Request $request) : Response
+    public function new(Request $request, ValidatorInterface $validator) : Response
     {
+        //set errors empty array
+        $errors = [];
         $lessonDTO = new LessonDTO();
 
         $activeTeacherDTOs = $this->teacherService->getActiveTeachers();
+
+
 
         $form = $this->createForm(LessonDTOType::class, $lessonDTO, [
             'teachers' => $activeTeacherDTOs, // Pass DTOs to the form
@@ -54,25 +60,26 @@ class AdminLessonController extends AbstractController
 
         if ($form->isSubmitted()) {
 
-            if (!$form->isValid()){
-                $this->addFlash('error', 'There were errors in the form. Please fix them.');
+            $errors = $validator->validate($form);
+
+            if(count($errors) === 0){
+                $form->get('teacher')->getData() ? $lessonDTO->setTeacher($form->get('teacher')->getData()) : $lessonDTO->setTeacher(null);
+                $this->lessonService->save($lessonDTO);
+                $this->addFlash('success', 'Saved successfully!');
+                return $this->redirectToRoute('admin_lesson_list');
             }
-
-            $form->get('teacher')->getData() ?? $lessonDTO->setTeacher($form->get('teacher')->getData());
-
-            $this->lessonService->save($lessonDTO);
-
-            return $this->redirectToRoute('admin_lesson_list'); // Adjust the route as needed
         }
 
         return $this->render('admin/lesson/new.html.twig', [
             'form' => $form->createView(),
+            'errors' => $errors
         ]);
     }
 
     #[Route('/edit/{id}', name: 'edit')]
-    public function edit(int $id, Request $request) : Response
+    public function edit(int $id, Request $request, ValidatorInterface $validator) : Response
     {
+        $errors = [];
         $lessonDTO = $this->lessonService->getLessonById($id);
 
         $activeTeacherDTOs = $this->teacherService->getActiveTeachers();
@@ -83,20 +90,23 @@ class AdminLessonController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted()) {
-
-            if (!$form->isValid()){
-                $this->addFlash('error', 'There were errors in the form. Please fix them.');
+            
+            $errors = $validator->validate($form);
+            if(count($errors) === 0){
+                
+                if($form->get('teacher')->getData()) $lessonDTO->setTeacher($form->get('teacher')->getData());
+                
+                $this->lessonService->save($lessonDTO, $id);
+                $this->addFlash('success', 'Saved successfully!');
+                return $this->redirectToRoute('admin_lesson_list');
             }
-
-            $this->lessonService->save($lessonDTO, $id);
-
-            return $this->redirectToRoute('admin_lesson_list');
         }
         $lessonDTO = $this->lessonService->getLessonById($id);
         
         return $this->render('admin/lesson/edit.html.twig', [
             'form' => $form->createView(),
-            'lesson' => $lessonDTO
+            'lesson' => $lessonDTO,
+            'errors' => $errors
         ]);
     }
 

@@ -65,8 +65,8 @@ class TeacherService
     
     public function save(TeacherDTO $teacherDTO) : TeacherDTO
     {
-        // $teacher = $id ? $this->teacherRepository->find($id) : new Teacher();
         $teacher = $this->toEntity($teacherDTO);
+        $teacher->setUpdatedAt(new \DateTimeImmutable());
         $this->em->persist($teacher);
         $this->em->flush();
         return $this->toDTO($teacher);

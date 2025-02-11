@@ -2,7 +2,6 @@
 namespace App\Form;
 
 use App\DTO\LessonDTO;
-use App\Entity\Teacher;
 use App\DTO\TeacherDTO;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
@@ -24,11 +23,13 @@ class LessonDTOType extends AbstractType
                     '1st' => '1',
                     '2nd' => '2',
                     '3rd' => '3',
-                    '4rd' => '4',
-                    '5rd' => '5',
-                    '6rd' => '6',
-                    '7rd' => '7',
-                    '8rd' => '8',
+                    '4th' => '4',
+                    '5th' => '5',
+                    '6th' => '6',
+                    '7th' => '7',
+                    '8th' => '8',
+                    '9th' => '9',
+                    '10th' => '10',
                 ],
                 'multiple' => false,
                 'label' => 'Semester',
@@ -43,6 +44,8 @@ class LessonDTOType extends AbstractType
                 },
                 'label' => 'Teacher',
                 'attr' => ['class' => 'select2'],
+                // 'placeholder' => 'No selected teacher',
+                // 'required' => false,
             ])
             ->add('save', SubmitType::class);
     }

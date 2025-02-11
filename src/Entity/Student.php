@@ -24,15 +24,9 @@ class Student extends MainEntity
     #[ORM\JoinColumn(nullable: false)]
     private ?User $user = null;
 
-    /**
-     * @var Collection<int, Grade>
-     */
     #[ORM\OneToMany(targetEntity: Grade::class, mappedBy: 'student', cascade: ['remove'], orphanRemoval: true)]
     private Collection $grades;
 
-    /**
-     * @var Collection<int, Lesson>
-     */
     #[ORM\ManyToMany(targetEntity: Lesson::class, inversedBy: 'students')]
     private Collection $lessons;
 
@@ -74,9 +68,6 @@ class Student extends MainEntity
         return $this;
     }
 
-    /**
-     * @return Collection<int, Grade>
-     */
     public function getGrades(): Collection
     {
         return $this->grades;
@@ -104,9 +95,6 @@ class Student extends MainEntity
         return $this;
     }
 
-    /**
-     * @return Collection<int, Lesson>
-     */
     public function getLessons(): Collection
     {
         return $this->lessons;

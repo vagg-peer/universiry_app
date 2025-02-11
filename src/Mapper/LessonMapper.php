@@ -24,6 +24,7 @@ class LessonMapper
         $lesson->setName($dto->getName());
         $lesson->setSemester($dto->getSemester());
         if($dto->getTeacher()) $lesson->setTeacher($this->teacherMapper->toEntity($dto->getTeacher()));
+        $dto->getTeacher() ? $lesson->setTeacher($this->teacherMapper->toEntity($dto->getTeacher())) : $lesson->setTeacher(null);
         return $lesson;
     }
 

@@ -15,6 +15,8 @@ use App\Service\LessonService;
 use App\Service\GradeService;
 use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
+use Knp\Component\Pager\PaginatorInterface;
+use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 
 #[Route('/admin/student', name: 'admin_student_')]
 class AdminStudentController extends AbstractController
@@ -34,10 +36,12 @@ class AdminStudentController extends AbstractController
     }
 
     #[Route('/', name: 'list')]
-    public function index(): Response
+    public function index(Request $request, PaginatorInterface $paginator): Response
     {
         // Fetch all students from the repository
         $students = $this->studentService->getAll();
+
+        $students = $paginator->paginate($students, $request->query->getInt('page', 1), 5);
 
         // Render the Twig template and pass the list of students
         return $this->render('admin/student/index.html.twig', [
@@ -58,24 +62,31 @@ class AdminStudentController extends AbstractController
 
             $errors = $validator->validate($studentForm);
 
-            $studentDTO->getUser()->setRoles(['ROLE_STUDENT']);
-
-            $this->studentService->save($studentDTO);
-
-            return $this->redirectToRoute('admin_student_list'); // Adjust the route as needed
+            if(count($errors) === 0){
+                try{
+                    $studentDTO->getUser()->setRoles(['ROLE_STUDENT']);
+                    $this->studentService->save($studentDTO);
+                    $this->addFlash('success', 'Saved successfully!');
+                    return $this->redirectToRoute('admin_student_list');
+                }catch (UniqueConstraintViolationException $e) {
+                    $this->addFlash('error', 'This email is already registered. Please use a different email.');
+                }
+            }
         }
 
         return $this->render('admin/student/new.html.twig', [
             'studentForm' => $studentForm->createView(),
+            'errors' => $errors
         ]);
     }
 
     #[Route('/edit/{id}', name: 'edit')]
-    public function edit(int $id, Request $request, ValidatorInterface $validator): Response
+    public function edit(int $id, Request $request, ValidatorInterface $validator, PaginatorInterface $paginator): Response
     {
         $errors = [];
         $studentDTO = $this->studentService->getStudentById($id);
         $studentGrades = $studentDTO->getGrades();
+        
         $lessonDTOs = $this->lessonService->getStudentAvailableLessonsBySemester($studentDTO->getSemester());
         // dd($lessonDTOs);
         
@@ -89,7 +100,9 @@ class AdminStudentController extends AbstractController
         }else{
             $remainingLessons = $lessonDTOs;
         }
-   
+
+        $studentGrades = $paginator->paginate($studentGrades, $request->query->getInt('page', 1), 5);
+        
         $gradeDTO = new GradeDTO();
         $gradeDTO->setStudent($studentDTO); // Automatically assign the student
         $gradeForm = $this->createForm(GradeDTOType::class, $gradeDTO, [
@@ -102,9 +115,14 @@ class AdminStudentController extends AbstractController
             $errors = $validator->validate($studentForm);
 
             if(count($errors) === 0){
-                $studentDTO->getUser()->setRoles(['ROLE_STUDENT']);
-                $this->studentService->save($studentDTO, $id);
-                return $this->redirectToRoute('admin_student_list');
+                try{
+                    $studentDTO->getUser()->setRoles(['ROLE_STUDENT']);
+                    $this->studentService->save($studentDTO, $id);
+                    $this->addFlash('success', 'Saved successfully!');
+                    return $this->redirectToRoute('admin_student_list');
+                }catch (UniqueConstraintViolationException $e) {
+                    $this->addFlash('error', 'This email is already registered. Please use a different email.');
+                }
             }
         }
 
@@ -116,7 +134,7 @@ class AdminStudentController extends AbstractController
             
             if(count($errors) === 0){
                 $this->gradeService->save($gradeDTO);
-                $this->addFlash('success', 'Grade added successfully!');
+                $this->addFlash('success', 'Saved successfully!');
                 return $this->redirectToRoute('admin_student_edit', ['id' => $id]);
             }
 

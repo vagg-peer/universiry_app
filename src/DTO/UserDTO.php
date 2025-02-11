@@ -29,19 +29,18 @@ class UserDTO
     )]
     private ?string $lastname = null;
 
-    #[Assert\NotBlank(message: "Lastname is required.")]
     private array $roles = [];
 
     #[Assert\Type(type: 'bool', message: "Invalid value. This must be true or false.")]
     private ?bool $isActive = null;
 
     #[Assert\Length(
-        min: 2, 
+        min: 6, 
         max: 30, 
-        minMessage: "Password must have at least 2 characters.",
+        minMessage: "Password must have at least 6 characters.",
         maxMessage: "Password cannot exceed 30 characters."
     )]
-    private ?string $plainPassword = null; // Store the plain password for form handling
+    private ?string $plainPassword = null;
 
     public function getId(): ?int
     {
@@ -54,19 +53,11 @@ class UserDTO
         return $this;
     }
 
-    /**
-     * Get the value of email
-     */ 
     public function getEmail()
     {
         return $this->email;
     }
 
-    /**
-     * Set the value of email
-     *
-     * @return  self
-     */ 
     public function setEmail($email)
     {
         $this->email = $email;
@@ -74,19 +65,11 @@ class UserDTO
         return $this;
     }
 
-    /**
-     * Get the value of firstname
-     */ 
     public function getFirstname()
     {
         return $this->firstname;
     }
 
-    /**
-     * Set the value of firstname
-     *
-     * @return  self
-     */ 
     public function setFirstname($firstname)
     {
         $this->firstname = $firstname;
@@ -94,19 +77,11 @@ class UserDTO
         return $this;
     }
 
-    /**
-     * Get the value of lastname
-     */ 
     public function getLastname()
     {
         return $this->lastname;
     }
 
-    /**
-     * Set the value of lastname
-     *
-     * @return  self
-     */ 
     public function setLastname($lastname)
     {
         $this->lastname = $lastname;
@@ -114,19 +89,11 @@ class UserDTO
         return $this;
     }
 
-    /**
-     * Get the value of roles
-     */ 
     public function getRoles()
     {
         return $this->roles;
     }
 
-    /**
-     * Set the value of roles
-     *
-     * @return  self
-     */ 
     public function setRoles(array $roles)
     {
         $this->roles = $roles;
@@ -134,19 +101,11 @@ class UserDTO
         return $this;
     }
 
-    /**
-     * Get the value of isActive
-     */ 
     public function getIsActive()
     {
         return $this->isActive;
     }
 
-    /**
-     * Set the value of isActive
-     *
-     * @return  self
-     */ 
     public function setIsActive(?bool $isActive)
     {
         $this->isActive = $isActive;
@@ -154,19 +113,11 @@ class UserDTO
         return $this;
     }
 
-    /**
-     * Get the value of plainPassword
-     */ 
     public function getPlainPassword()
     {
         return $this->plainPassword;
     }
 
-    /**
-     * Set the value of plainPassword
-     *
-     * @return  self
-     */ 
     public function setPlainPassword($plainPassword)
     {
         $this->plainPassword = $plainPassword;

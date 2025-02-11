@@ -59,6 +59,7 @@ class LessonService
     {
         $lesson = ($id) ? $this->lessonRepository->find($id) : new Lesson();
         $lesson = $this->toEntity($lessonDTO, $lesson);
+        $lesson->setUpdatedAt(new \DateTimeImmutable());
         // dd($lesson);
         $this->em->persist($lesson);
         $this->em->flush();

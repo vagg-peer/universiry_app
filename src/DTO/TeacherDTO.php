@@ -8,14 +8,12 @@ class TeacherDTO
     private ?int $id = null;
 
     #[Assert\NotNull]
+    #[Assert\Valid]
     private ?UserDTO $user = null;
 
     #[Assert\Type(type: 'bool', message: "Invalid value. This must be true or false.")]
     private ?bool $isActive = null;
 
-        /**
-     * @var LessonDTO[]|null
-     */
     private ?array $lessons = [];
 
 
@@ -52,9 +50,6 @@ class TeacherDTO
         return $this;
     }
 
-    /**
-     * @return LessonDTO[]|null
-     */
     public function getLessons(): ?array
     {
         usort($this->lessons, function ($a, $b) {
@@ -63,9 +58,6 @@ class TeacherDTO
         return $this->lessons;
     }
 
-    /**
-     * @param LessonDTO[] $lessons
-     */
     public function setLessons(array $lessons): self
     {
         $this->lessons = $lessons;

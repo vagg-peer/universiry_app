@@ -7,8 +7,10 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use App\Service\StudentService;
 use App\Utils\StudentHelper;
+use Symfony\Component\HttpFoundation\Request;
+use Knp\Component\Pager\PaginatorInterface;
 
-final class StudentController extends AbstractController
+class StudentController extends AbstractController
 {
     private StudentService $studentService;
 
@@ -18,15 +20,19 @@ final class StudentController extends AbstractController
     }
 
     #[Route('/student', name: 'student_dashboard')]
-    public function index(): Response
+    public function index(Request $request, PaginatorInterface $paginator): Response
     {
+        //get student dto
         $studentDTO = $this->studentService->getStudentUserById($this->getUser()->getId());//ignore error from php Intelephense 
-        $gradesDTO = $studentDTO->getGrades();
+        //get student grades
+        $gradesDTOs = $studentDTO->getGrades();
+        //paginate
+        $gradesDTOs = $paginator->paginate($gradesDTOs, $request->query->getInt('page', 1), 5);
+        //calculate semester
         $semester = StudentHelper::calculateStudentSemester($studentDTO->getStartOfStudies());
-        // dd($semester);
         return $this->render('student/index.html.twig', [
             'student' => $studentDTO,
-            'grades' => $gradesDTO,
+            'grades' => $gradesDTOs,
             'semester' => $semester,
             'homePath' => '/student'
         ]);

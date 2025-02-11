@@ -7,7 +7,9 @@
     {% include 'admin/partials/_navbar.html.twig' %}
     <div class="container mt-5">
         <h1 class="text-center mb-4">Teachers List</h1>
-        
+        {% for message in app.flashes('success') %}
+            <div class="alert alert-success">{{ message }}</div>
+        {% endfor %}
         <div class="card shadow p-4">
             <table class="table table-striped">
                 <thead class="table-dark">
@@ -57,6 +59,7 @@
                     {% endfor %}
                 </tbody>
             </table>
+            {{ knp_pagination_render(teachers) }}
         </div>
     </div>
 {% endblock %}
