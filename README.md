@@ -3,8 +3,11 @@ A Symfony-based application implementing clean architecture, MVC pattern, and do
 
 # Prerequisite
 PHP >= 8.2
+
 Mysql >= 8
+
 Symfony CLI
+
 Composer >= 2.6.5
 
 # Run the project
