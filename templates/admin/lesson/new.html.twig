@@ -12,12 +12,6 @@
     <div class="container d-flex justify-content-center align-items-center" style="min-height: 100vh;">
         <div class="w-25">
             <h1 class="text-center mb-4">New Lesson</h1>
-            {% for message in app.flashes('error') %}
-                <div class="alert alert-danger">{{ message }}</div>
-            {% endfor %}
-            {% for message in app.flashes('success') %}
-                <div class="alert alert-success">{{ message }}</div>
-            {% endfor %}
             <div class="card shadow p-4">
                 {{ form_start(form, {'attr': {'class': 'needs-validation'}}) }}
                     {{ form_widget(form) }}

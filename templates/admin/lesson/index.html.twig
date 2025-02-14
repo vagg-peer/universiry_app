@@ -7,12 +7,6 @@
     {% include 'admin/partials/_navbar.html.twig' %}
     <div class="container mt-5">
         <h1 class="text-center mb-4">Lessons List</h1>
-            {% for message in app.flashes('error') %}
-                <div class="alert alert-danger">{{ message }}</div>
-            {% endfor %}
-            {% for message in app.flashes('success') %}
-                <div class="alert alert-success">{{ message }}</div>
-            {% endfor %}
         <div class="card shadow p-4">
             <table class="table table-striped">
                 <thead class="table-dark">

@@ -12,12 +12,6 @@
     {% include 'admin/partials/_navbar.html.twig' %}
     <div class="container d-flex flex-column justify-content-center align-items-center">
         <h1 class="text-center mb-4">Edit Student</h1>
-        {% for message in app.flashes('error') %}
-            <div class="alert alert-danger">{{ message }}</div>
-        {% endfor %}
-        {% for message in app.flashes('success') %}
-            <div class="alert alert-success">{{ message }}</div>
-        {% endfor %}
     </div>
        
     <div class="container d-flex justify-content-center align-items-center">
