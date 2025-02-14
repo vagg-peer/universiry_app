@@ -1,5 +1,5 @@
 # university_app
-A Symfony-based application implementing clean architecture, MVC pattern, and domain-driven design principles.
+A Symfony application implementing clean architecture, MVC pattern, and domain-driven design principles.
 
 # Prerequisite
 PHP >= 8.2
