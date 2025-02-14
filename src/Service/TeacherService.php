@@ -45,16 +45,20 @@ class TeacherService
     public function getTeacherById(int $id): ?TeacherDTO
     {
         $teacher = $this->teacherRepository->find($id);
-        return $teacher ? $this->toDTO($teacher) : null;
+        if (!$teacher) {
+            throw new \RuntimeException("Teacher with ID $id not found.");
+        }
+        return $this->toDTO($teacher);
     }
 
     public function getTeacherUserById(int $id): ?TeacherDTO
     {
         $teacher = $this->teacherRepository->findTeacherByUserId($id);
-        if ($teacher) {
-            return $this->toDTO($teacher);
+        if (!$teacher) {
+            throw new \RuntimeException("Teacher with ID $id not found.");
         }
-        return null;
+        return $this->toDTO($teacher);
+       
     }
 
     public function getActiveTeachers(): ?array
@@ -65,17 +69,32 @@ class TeacherService
     
     public function save(TeacherDTO $teacherDTO) : TeacherDTO
     {
-        $teacher = $this->toEntity($teacherDTO);
-        $teacher->setUpdatedAt(new \DateTimeImmutable());
-        $this->em->persist($teacher);
-        $this->em->flush();
-        return $this->toDTO($teacher);
+        if (!$teacherDTO->getUser()) {
+            throw new \InvalidArgumentException("Teacher must have an associated user.");
+        }
+        try{
+            $teacherDTO->getUser()->setRoles(['ROLE_TEACHER']);
+            $teacher = $this->toEntity($teacherDTO);
+            $teacher->setUpdatedAt(new \DateTimeImmutable());
+            $this->em->persist($teacher);
+            $this->em->flush();
+            return $this->toDTO($teacher);
+        } catch (\Exception $e) {
+            throw new \RuntimeException("Failed to save student: " . $e->getMessage());
+        }
     }
 
     public function delete(int $id) : void
     {
         $teacher = $this->teacherRepository->find($id);
-        $this->em->remove($teacher);
-        $this->em->flush();
+        if (!$teacher) {
+            throw new \RuntimeException("Teacher with ID $id not found.");
+        }
+        try {
+            $this->em->remove($teacher);
+            $this->em->flush();
+        } catch (\Exception $e) {
+            throw new \RuntimeException("Failed to delete teacher: " . $e->getMessage());
+        }
     }
 }

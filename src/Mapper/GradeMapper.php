@@ -7,24 +7,43 @@ use App\Entity\Student;
 use App\Entity\Lesson;
 use App\DTO\StudentDTO;
 use App\DTO\LessonDTO;
+use App\Repository\GradeRepository;
+use App\Mapper\LessonMapper;
+use App\Mapper\StudentMapper;
 
 class GradeMapper
 {
-    public function toDTO(Grade $grade, StudentDTO $studentDTO, LessonDTO $lessonDTO): GradeDTO
+    private GradeRepository $gradeRepository;
+    private LessonMapper $lessonMapper;
+    private StudentMapper $studentMapper;
+
+    public function __construct(GradeRepository $gradeRepository, LessonMapper $lessonMapper, StudentMapper $studentMapper)
+    {
+        $this->gradeRepository = $gradeRepository;
+        $this->lessonMapper = $lessonMapper;
+        $this->studentMapper = $studentMapper;
+    }
+ 
+    public function toDTO(Grade $grade): GradeDTO
     {
         $dto = new GradeDTO();
         $dto->setScore($grade->getScore());
-        $dto->setStudent($studentDTO);
-        $dto->setLesson($lessonDTO);
+        // $dto->setStudent($studentDTO);
+        $dto->setStudent($this->studentMapper->toDTO($grade->getStudent()));
+        // $dto->setLesson($lessonDTO);
+        $dto->setLesson($this->lessonMapper->toDTO($grade->getLesson()));
         return $dto;
     }
 
-    public function toEntity(GradeDTO $dto, Student $student, Lesson $lesson): Grade
+    public function toEntity(GradeDTO $dto): Grade
     {
-        $grade = $grade ?? new Grade();
+        $grade = $dto->getId() ? $this->gradeRepository->find($dto->getId()) : new Grade();
         $grade->setScore($dto->getScore());
-        $grade->setStudent($student);
-        $grade->setLesson($lesson);  
+        // $grade->setStudent($student);
+        $grade->setStudent($this->studentMapper->toEntity($dto->getStudent()));
+
+        // $grade->setLesson($lesson);
+        $grade->setLesson($this->lessonMapper->toEntity($dto->getLesson())); 
  
         return $grade;
     }

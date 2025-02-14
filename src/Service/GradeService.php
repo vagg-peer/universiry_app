@@ -15,30 +15,22 @@ class GradeService
     private EntityManagerInterface $em;
     private GradeRepository $gradeRepository;
     private GradeMapper $gradeMapper;
-    private LessonMapper $lessonMapper;
-    private StudentMapper $studentMapper;
 
-    public function __construct(EntityManagerInterface $em, GradeRepository $gradeRepository, GradeMapper $gradeMapper, LessonMapper $lessonMapper, StudentMapper $studentMapper)
+    public function __construct(EntityManagerInterface $em, GradeRepository $gradeRepository, GradeMapper $gradeMapper)
     {
         $this->em = $em;
         $this->gradeRepository = $gradeRepository;
         $this->gradeMapper = $gradeMapper;
-        $this->lessonMapper = $lessonMapper;
-        $this->studentMapper = $studentMapper;
     }
 
     public function toDTO(Grade $grade) : GradeDTO
     {
-        $studentDTO = $this->studentMapper->toDTO($grade->getStudent(), $grade->getStudent()->getGrades()->toArray(), $grade->getStudent()->getLessons()->toArray());
-        $lessonDTO = $this->lessonMapper->toDTO($grade->getLesson());
-        return $this->gradeMapper->toDTO($grade, $studentDTO, $lessonDTO);
+        return $this->gradeMapper->toDTO($grade);
     }
 
     public function toEntity(GradeDTO $gradeDTO) : Grade
     {
-        $student = $this->studentMapper->toEntity($gradeDTO->getStudent());
-        $lesson = $this->lessonMapper->toEntity($gradeDTO->getLesson());
-        return $this->gradeMapper->toEntity($gradeDTO, $student, $lesson);
+        return $this->gradeMapper->toEntity($gradeDTO);
     }
 
     public function getAll() : array
@@ -50,25 +42,22 @@ class GradeService
     public function getGradeById(int $id): ?GradeDTO
     {
         $grade = $this->gradeRepository->find($id);
-        if ($grade) {
-            return $this->toDTO($grade);
+        if (!$grade) {
+            throw new \RuntimeException("Lesson with ID $id not found.");
         }
-        return null;
+        return $this->toDTO($grade);
     }   
     
-    public function save(GradeDTO $gradeDTO, int $id = null) : GradeDTO
+    public function save(GradeDTO $gradeDTO) : GradeDTO
     {
-        $grade = ($id) ? $this->gradeRepository->find($id) : new Grade();
-        $grade = $this->toEntity($gradeDTO, $grade);
-        $this->em->persist($grade);
-        $this->em->flush();
-        return $this->toDTO($grade);
-    }
-
-    public function delete(int $id) : void
-    {
-        $grade = $this->gradeRepository->find($id);
-        $this->em->remove($grade);
-        $this->em->flush();
+        try {
+            $grade = $gradeDTO->getId() ? $this->gradeRepository->find($gradeDTO->getId()) : new Grade();
+            $grade = $this->toEntity($gradeDTO);
+            $this->em->persist($grade);
+            $this->em->flush();
+            return $this->toDTO($grade);
+        } catch (\Exception $e) {
+            throw new \RuntimeException("Failed to save student: " . $e->getMessage());
+        }
     }
 }

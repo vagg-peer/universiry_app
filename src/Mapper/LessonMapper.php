@@ -18,7 +18,7 @@ class LessonMapper
         $this->teacherMapper = $teacherMapper;
         $this->lessonRepository = $lessonRepository;
     }
-    public function toEntity(LessonDTO $dto, ?Lesson $lesson = null): Lesson
+    public function toEntity(LessonDTO $dto): Lesson
     {
         $lesson = $dto->getId() ? $this->lessonRepository->find($dto->getId()) : new Lesson();
         $lesson->setName($dto->getName());

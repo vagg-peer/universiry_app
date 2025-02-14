@@ -29,9 +29,13 @@ class UserService
 
     public function save(UserDTO $userDTO) : UserDTO
     {   
-        $user = $this->toEntity($userDTO);
-        $this->em->persist($user);
-        $this->em->flush();
-        return $this->toDTO($user);
+        try {
+            $user = $this->toEntity($userDTO);
+            $this->em->persist($user);
+            $this->em->flush();
+            return $this->toDTO($user);
+        } catch (\Exception $e) {
+            throw new \RuntimeException("Failed to save student: " . $e->getMessage());
+        }
     }
 }

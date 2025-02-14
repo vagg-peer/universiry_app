@@ -43,34 +43,49 @@ class StudentService
     public function getStudentById(int $id): ?StudentDTO
     {
         $student = $this->studentRepository->find($id);
-        if ($student) {
-            return $this->toDTO($student);
+        if (!$student) {
+            throw new \RuntimeException("Student with ID $id not found.");
         }
-        return null;
+        return $this->toDTO($student);
     }
     
     public function getStudentUserById(int $id): ?StudentDTO
     {
         $student = $this->studentRepository->findStudentByUserId($id);
-        if ($student) {
-            return $this->toDTO($student);
+        if (!$student) {
+            throw new \RuntimeException("No student found for user ID $id.");
         }
-        return null;
+        return $this->toDTO($student);
     }
     
     public function save(StudentDTO $studentDTO) : StudentDTO
     {
-        $student = $this->toEntity($studentDTO);
-        $student->setUpdatedAt(new \DateTimeImmutable());
-        $this->em->persist($student);
-        $this->em->flush();
-        return $this->toDTO($student);
+        if (!$studentDTO->getUser()) {
+            throw new \InvalidArgumentException("Student must have an associated user.");
+        }
+        try {
+            $studentDTO->getUser()->setRoles(['ROLE_STUDENT']);
+            $student = $this->toEntity($studentDTO);
+            $student->setUpdatedAt(new \DateTimeImmutable());
+            $this->em->persist($student);
+            $this->em->flush();
+            return $this->toDTO($student);
+        } catch (\Exception $e) {
+            throw new \RuntimeException("Failed to save student: " . $e->getMessage());
+        }
     }
 
     public function delete(int $id) : void
     {
         $student = $this->studentRepository->find($id);
-        $this->em->remove($student);
-        $this->em->flush();
+        if (!$student) {
+            throw new \RuntimeException("Student with ID $id not found.");
+        }
+        try {
+            $this->em->remove($student);
+            $this->em->flush();
+        } catch (\Exception $e) {
+            throw new \RuntimeException("Failed to delete student: " . $e->getMessage());
+        }
     }
 }

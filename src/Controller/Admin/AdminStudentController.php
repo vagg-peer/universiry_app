@@ -38,12 +38,11 @@ class AdminStudentController extends AbstractController
     #[Route('/', name: 'list')]
     public function index(Request $request, PaginatorInterface $paginator): Response
     {
-        // Fetch all students from the repository
         $students = $this->studentService->getAll();
 
+        //pagination
         $students = $paginator->paginate($students, $request->query->getInt('page', 1), 5);
 
-        // Render the Twig template and pass the list of students
         return $this->render('admin/student/index.html.twig', [
             'students' => $students,
         ]);
@@ -70,6 +69,8 @@ class AdminStudentController extends AbstractController
                     return $this->redirectToRoute('admin_student_list');
                 }catch (UniqueConstraintViolationException $e) {
                     $this->addFlash('error', 'This email is already registered. Please use a different email.');
+                }catch (\Exception $e) {
+                    $this->addFlash('error', 'An unexpected error occurred.');
                 }
             }
         }
@@ -84,33 +85,42 @@ class AdminStudentController extends AbstractController
     public function edit(int $id, Request $request, ValidatorInterface $validator, PaginatorInterface $paginator): Response
     {
         $errors = [];
-        $studentDTO = $this->studentService->getStudentById($id);
+        try {
+            $studentDTO = $this->studentService->getStudentById($id);
+        } catch (\RuntimeException $e) {
+            $this->addFlash('error', $e->getMessage());
+            return $this->redirectToRoute('admin_student_list');
+        }
+        
         $studentGrades = $studentDTO->getGrades();
-        
+        //get lessons available to the student. lessons.semmester <= student->semester
         $lessonDTOs = $this->lessonService->getStudentAvailableLessonsBySemester($studentDTO->getSemester());
-        
+        //create student form
         $studentForm = $this->createForm(StudentDTOType::class, $studentDTO);
         
+        //get lessons with no score
         if($studentGrades){
+            //get all ids from every lesson has a score 
             $ScoredLessons = array_map(fn($item) => $item->getLesson()->getId(), $studentGrades);
+            //exclude lessons tha has grade from remaining lessons
             $remainingLessons = array_filter($lessonDTOs, fn($lesson) => !in_array($lesson->getId(), $ScoredLessons));
         }else{
             $remainingLessons = $lessonDTOs;
         }
-
+        //grade pegination
         $studentGrades = $paginator->paginate($studentGrades, $request->query->getInt('page', 1), 5);
         
+        //create grades form
         $gradeDTO = new GradeDTO();
         $gradeDTO->setStudent($studentDTO); 
         $gradeForm = $this->createForm(GradeDTOType::class, $gradeDTO, [
             'lessons' => $remainingLessons,
         ]);
         
+        //handle student form
         $studentForm->handleRequest($request);
         if ($studentForm->isSubmitted()) {
-
             $errors = $validator->validate($studentForm);
-
             if(count($errors) === 0){
                 try{
                     $studentDTO->getUser()->setRoles(['ROLE_STUDENT']);
@@ -119,22 +129,25 @@ class AdminStudentController extends AbstractController
                     return $this->redirectToRoute('admin_student_list');
                 }catch (UniqueConstraintViolationException $e) {
                     $this->addFlash('error', 'This email is already registered. Please use a different email.');
+                }catch (\Exception $e) {
+                    $this->addFlash('error', 'An unexpected error occurred.');
                 }
             }
         }
 
-        // Handle Grade Form Submission
+        //handle grade form
         $gradeForm->handleRequest($request);
-
         if ($gradeForm->isSubmitted()) {
             $errors = $validator->validate($gradeDTO);
-            
             if(count($errors) === 0){
-                $this->gradeService->save($gradeDTO);
-                $this->addFlash('success', 'Saved successfully!');
-                return $this->redirectToRoute('admin_student_edit', ['id' => $id]);
-            }
-
+                try {
+                    $this->gradeService->save($gradeDTO);
+                    $this->addFlash('success', 'Grade added successfully!');
+                    return $this->redirectToRoute('admin_student_edit', ['id' => $id]);
+                } catch (\Exception $e) {
+                    $this->addFlash('error', 'Failed to save grade.');
+                }
+            }    
         }
         
         return $this->render('admin/student/edit.html.twig', [
@@ -144,7 +157,6 @@ class AdminStudentController extends AbstractController
             'grades' => $studentGrades,
             'errors' => $errors
         ]);
-
     }
 
     #[Route('/delete/{id}', name: 'delete', methods: ['POST'])]
@@ -156,17 +168,12 @@ class AdminStudentController extends AbstractController
             throw $this->createAccessDeniedException('Invalid CSRF token');
         }
 
-        $studentDTO = $this->studentService->getStudentById($id);
-        
-
-        if (!$studentDTO) {
-            throw $this->createNotFoundException('Student not found');
+        try {
+            $this->studentService->delete($id);
+            $this->addFlash('success', 'Student deleted successfully.');
+        } catch (\RuntimeException $e) {
+            $this->addFlash('error', $e->getMessage());
         }
-        
-        $this->studentService->delete($studentDTO->getId());
-
-        $this->addFlash('success', 'Student deleted successfully.');
-
         return $this->redirectToRoute('admin_student_list');
     }
 

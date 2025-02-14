@@ -32,7 +32,7 @@ class AdminTeacherController extends AbstractController
     public function index(Request $request, PaginatorInterface $paginator): Response
     {
         $teachers = $this->teacherService->getAll();
-
+        //pagination
         $teachers = $paginator->paginate($teachers, $request->query->getInt('page', 1), 5);
 
         return $this->render('admin/teacher/index.html.twig', [
@@ -55,13 +55,14 @@ class AdminTeacherController extends AbstractController
 
             if(count($errors) === 0){
                 try{    
-                    $teacherDTO->getUser()->setRoles(['ROLE_TEACHER']);
                     $this->teacherService->save($teacherDTO);
                     $this->addFlash('success', 'Saved successfully!');
                     return $this->redirectToRoute('admin_teacher_list');
                 } catch (UniqueConstraintViolationException $e) {
                     $this->addFlash('error', 'This email is already registered. Please use a different email.');
-                } 
+                }  catch (\Exception $e) {
+                    $this->addFlash('error', 'An unexpected error occurred.');
+                }
             }
         }
 
@@ -75,7 +76,12 @@ class AdminTeacherController extends AbstractController
     public function edit(int $id, Request $request, ValidatorInterface $validator): Response
     {
         $errors = [];
-        $teacherDTO = $this->teacherService->getTeacherById($id);
+        try {
+            $teacherDTO = $this->teacherService->getTeacherById($id);
+        } catch (\RuntimeException $e) {
+            $this->addFlash('error', $e->getMessage());
+            return $this->redirectToRoute('admin_teacher_list');
+        }
         
 
         $form = $this->createForm(TeacherDTOType::class, $teacherDTO);
@@ -87,13 +93,14 @@ class AdminTeacherController extends AbstractController
 
             if(count($errors) === 0){
                 try{    
-                    $teacherDTO->getUser()->setRoles(['ROLE_TEACHER']);
                     $this->teacherService->save($teacherDTO, $id);
                     $this->addFlash('success', 'Saved successfully!');
                     return $this->redirectToRoute('admin_teacher_list');
                 } catch (UniqueConstraintViolationException $e) {
                     $this->addFlash('error', 'This email is already registered. Please use a different email.');
-                } 
+                }  catch (\Exception $e) {
+                    $this->addFlash('error', 'An unexpected error occurred.');
+                }
             }
         }
         $teacherDTO = $this->teacherService->getTeacherById($id);
@@ -115,15 +122,13 @@ class AdminTeacherController extends AbstractController
         if (!$this->csrfTokenManager->isTokenValid(new \Symfony\Component\Security\Csrf\CsrfToken('delete' . $id, $submittedToken))) {
             throw $this->createAccessDeniedException('Invalid CSRF token');
         }
-
-        $teacherDTO = $this->teacherService->getTeacherById($id);
         
-
-        if (!$teacherDTO) {
-            throw $this->createNotFoundException('Teacher not found');
+        try {
+            $this->teacherService->delete($id);
+            $this->addFlash('success', 'Teacher deleted successfully.');
+        } catch (\RuntimeException $e) {
+            $this->addFlash('error', $e->getMessage());
         }
-        
-        $this->teacherService->delete($teacherDTO->getId());
 
         $this->addFlash('success', 'Teacher deleted successfully.');
 

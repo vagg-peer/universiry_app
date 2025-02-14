@@ -46,26 +46,28 @@ class AdminLessonController extends AbstractController
         //set errors empty array
         $errors = [];
         $lessonDTO = new LessonDTO();
-
+        //get all active teachers
         $activeTeacherDTOs = $this->teacherService->getActiveTeachers();
 
-
-
+        //lesson form create form
         $form = $this->createForm(LessonDTOType::class, $lessonDTO, [
             'teachers' => $activeTeacherDTOs, 
         ]);
 
+        //handle teacher form
         $form->handleRequest($request);
-
         if ($form->isSubmitted()) {
-
             $errors = $validator->validate($form);
-
             if(count($errors) === 0){
                 $form->get('teacher')->getData() ? $lessonDTO->setTeacher($form->get('teacher')->getData()) : $lessonDTO->setTeacher(null);
-                $this->lessonService->save($lessonDTO);
-                $this->addFlash('success', 'Saved successfully!');
-                return $this->redirectToRoute('admin_lesson_list');
+                try {
+                    $form->get('teacher')->getData() ? $lessonDTO->setTeacher($form->get('teacher')->getData()) : $lessonDTO->setTeacher(null);
+                    $this->lessonService->save($lessonDTO);
+                    $this->addFlash('success', 'Lesson saved successfully!');
+                    return $this->redirectToRoute('admin_lesson_list');
+                } catch (\Exception $e) {
+                    $this->addFlash('error', 'An unexpected error occurred.');
+                }
             }
         }
 
@@ -80,27 +82,29 @@ class AdminLessonController extends AbstractController
     {
         $errors = [];
         $lessonDTO = $this->lessonService->getLessonById($id);
-
+        //get all active teachers
         $activeTeacherDTOs = $this->teacherService->getActiveTeachers();
 
+        //create teacher form
         $form = $this->createForm(LessonDTOType::class, $lessonDTO,[
             'teachers' => $activeTeacherDTOs
         ]);
-        $form->handleRequest($request);
 
+        //handle teacher form
+        $form->handleRequest($request);
         if ($form->isSubmitted()) {
-            
             $errors = $validator->validate($form);
             if(count($errors) === 0){
-                
-                if($form->get('teacher')->getData()) $lessonDTO->setTeacher($form->get('teacher')->getData());
-                
-                $this->lessonService->save($lessonDTO, $id);
-                $this->addFlash('success', 'Saved successfully!');
-                return $this->redirectToRoute('admin_lesson_list');
+                try {
+                    if($form->get('teacher')->getData()) $lessonDTO->setTeacher($form->get('teacher')->getData());
+                    $this->lessonService->save($lessonDTO, $id);
+                    $this->addFlash('success', 'Lesson updated successfully!');
+                    return $this->redirectToRoute('admin_lesson_list');
+                } catch (\Exception $e) {
+                    $this->addFlash('error', 'An unexpected error occurred.');
+                }
             }
         }
-        $lessonDTO = $this->lessonService->getLessonById($id);
         
         return $this->render('admin/lesson/edit.html.twig', [
             'form' => $form->createView(),
@@ -118,16 +122,12 @@ class AdminLessonController extends AbstractController
             throw $this->createAccessDeniedException('Invalid CSRF token');
         }
 
-        $lessonDTO = $this->lessonService->getLessonById($id);
-        
-
-        if (!$lessonDTO) {
-            throw $this->createNotFoundException('Lesson not found');
+        try {
+            $this->lessonService->delete($id);
+            $this->addFlash('success', 'Lesson deleted successfully.');
+        } catch (\RuntimeException $e) {
+            $this->addFlash('error', $e->getMessage());
         }
-        
-        $this->lessonService->delete($lessonDTO->getId());
-
-        $this->addFlash('success', 'Lesson deleted successfully.');
 
         return $this->redirectToRoute('admin_lesson_list');
     }
